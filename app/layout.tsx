@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { Cormorant_Garamond } from "next/font/google";
+import Link from "next/link";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,11 +16,9 @@ const cormorant = Cormorant_Garamond({
   style: ["normal", "italic"],
 });
 
-const nomes = process.env.COUPLE_NAMES ?? "Nossa Lista de Presentes";
-
 export const metadata: Metadata = {
-  title: nomes,
-  description: `Lista de presentes de casamento de ${nomes}`,
+  title: "Lista de Presentes de Casamento",
+  description: "Crie sua lista de presentes de casamento e receba os presentes via Pix.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -28,7 +27,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="pt-BR"
       className={`${geistSans.variable} ${cormorant.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <div className="flex-1">{children}</div>
+        <footer className="text-center text-xs text-foreground/50 py-6">
+          <Link href="/privacidade" className="hover:text-foreground/80 underline underline-offset-2">
+            Política de Privacidade
+          </Link>
+        </footer>
+      </body>
     </html>
   );
 }

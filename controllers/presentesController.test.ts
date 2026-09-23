@@ -40,6 +40,17 @@ describe('presentesController', () => {
     expect(listar(casamento.id)).toHaveLength(0);
   });
 
+  it('criar rejeita nome vazio ou preco invalido', async () => {
+    const casamento = await criarCasamentoDeTeste('hh@b.com', 'casal-hh');
+    const { criar } = await import('./presentesController');
+    expect(() => criar(casamento.id, { nome: '  ', descricao: '', preco: 100, imagens: [] })).toThrow(
+      'Nome'
+    );
+    expect(() => criar(casamento.id, { nome: 'Panela', descricao: '', preco: 0, imagens: [] })).toThrow(
+      'O preço precisa ser'
+    );
+  });
+
   it('atualizar/remover rejeitam presente de outro casamento', async () => {
     const casamentoA = await criarCasamentoDeTeste('ff@b.com', 'casal-ff');
     const casamentoB = await criarCasamentoDeTeste('gg@b.com', 'casal-gg');

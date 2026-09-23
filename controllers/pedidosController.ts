@@ -20,8 +20,8 @@ export async function criar(dados: {
   nomeConvidado: unknown;
   mensagem: unknown;
 }): Promise<Pedido> {
-  const nomeConvidado = texto(dados.nomeConvidado, 'nome do convidado', NOME_MAX_LENGTH, { obrigatorio: true });
-  const mensagem = texto(dados.mensagem, 'mensagem', MENSAGEM_MAX_LENGTH);
+  const nomeConvidado = texto(dados.nomeConvidado, 'Seu nome', NOME_MAX_LENGTH, { obrigatorio: true });
+  const mensagem = texto(dados.mensagem, 'Mensagem', MENSAGEM_MAX_LENGTH);
   if (!Number.isInteger(dados.presenteId)) throw new ErroValidacao('presente indisponivel');
 
   const presente = buscarPresentePorId(dados.presenteId as number);

@@ -13,13 +13,12 @@ describe('RootLayout', () => {
     const elemento = RootLayout({ children: <p>conteudo</p> } as never);
     expect(elemento.props.lang).toBe('pt-BR');
     expect(elemento.props.className).toContain('--font-geist-sans');
-    expect(elemento.props.children.props.children.props.children).toBe('conteudo');
+    const [conteudo] = elemento.props.children.props.children;
+    expect(conteudo.props.children.props.children).toBe('conteudo');
   });
 
-  it('usa COUPLE_NAMES do ambiente no metadata, com fallback', async () => {
-    vi.resetModules();
-    delete process.env.COUPLE_NAMES;
+  it('usa um titulo neutro (o nome do casal vem de cada pagina)', async () => {
     const mod = await import('./layout');
-    expect(mod.metadata.title).toBe('Nossa Lista de Presentes');
+    expect(mod.metadata.title).toBe('Lista de Presentes de Casamento');
   });
 });

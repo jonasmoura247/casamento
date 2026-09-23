@@ -8,14 +8,20 @@ describe('validacao', () => {
     await expect(lerJson(new Request('http://x', { method: 'POST', body: '[1]' }))).rejects.toThrow(ErroValidacao);
     await expect(
       lerJson(new Request('http://x', { method: 'POST', body: '{}', headers: { 'content-length': '999999' } }))
-    ).rejects.toThrow('grande demais');
+    ).rejects.toThrow('grandes demais');
   });
 
   it('texto rejeita tipo errado, vazio obrigatorio e excesso', () => {
     expect(() => texto(123, 'campo', 10)).toThrow(ErroValidacao);
-    expect(() => texto('  ', 'campo', 10, { obrigatorio: true })).toThrow('obrigatório');
-    expect(() => texto('a'.repeat(11), 'campo', 10)).toThrow('no máximo');
+    expect(() => texto('  ', 'campo', 10, { obrigatorio: true })).toThrow('Preencha o campo');
+    expect(() => texto('a'.repeat(11), 'campo', 10)).toThrow('muito longo');
     expect(texto(undefined, 'campo', 10)).toBe('');
+  });
+
+  it('texto remove codigo HTML/script colado no campo', () => {
+    expect(texto('<script>alert(1)</script> Obrigado!', 'campo', 100)).toBe('alert(1) Obrigado!');
+    expect(texto('Ana <b>e</b> Bruno', 'campo', 100)).toBe('Ana e Bruno');
+    expect(texto('Ana & Bruno', 'campo', 100)).toBe('Ana & Bruno');
   });
 
   it('dataIso valida formato e existencia', () => {
@@ -33,6 +39,6 @@ describe('validacao', () => {
   it('respostaErro nao vaza mensagem de erro inesperado', async () => {
     const r = respostaErro(new TypeError('Cannot read properties of undefined'));
     expect(r.status).toBe(500);
-    expect(await r.json()).toEqual({ erro: 'Erro interno' });
+    expect(await r.json()).toEqual({ erro: 'Algo deu errado. Tente novamente em instantes.' });
   });
 });

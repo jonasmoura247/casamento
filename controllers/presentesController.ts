@@ -14,25 +14,25 @@ const PRECO_MAX = 1_000_000;
 // Valida e normaliza entrada não confiável; campos ausentes ficam de fora (PATCH parcial).
 function validar(dados: Record<string, unknown>): Parameters<typeof atualizarPresente>[1] {
   const out: Record<string, unknown> = {};
-  if (dados.nome !== undefined) out.nome = texto(dados.nome, 'nome do presente', 100, { obrigatorio: true });
-  if (dados.descricao !== undefined) out.descricao = texto(dados.descricao, 'descrição', 500);
+  if (dados.nome !== undefined) out.nome = texto(dados.nome, 'Nome', 100, { obrigatorio: true });
+  if (dados.descricao !== undefined) out.descricao = texto(dados.descricao, 'Descrição', 500);
   if (dados.preco !== undefined) {
     const preco = typeof dados.preco === 'string' && dados.preco.trim() !== '' ? Number(dados.preco) : dados.preco;
     if (typeof preco !== 'number' || !Number.isFinite(preco) || preco <= 0 || preco > PRECO_MAX) {
-      throw new ErroValidacao(`preço deve ser um número maior que zero e no máximo ${PRECO_MAX}`);
+      throw new ErroValidacao('O preço precisa ser um valor maior que zero (ex.: 150 ou 89.90)');
     }
     out.preco = preco;
   }
   if (dados.imagens !== undefined) {
-    if (!Array.isArray(dados.imagens) || dados.imagens.length > 5) throw new ErroValidacao('imagens inválidas (máximo 5)');
-    out.imagens = dados.imagens.filter((u) => u !== '').map((u) => urlHttps(u, 'imagem'));
+    if (!Array.isArray(dados.imagens) || dados.imagens.length > 5) throw new ErroValidacao('Você pode colocar no máximo 5 fotos');
+    out.imagens = dados.imagens.filter((u) => u !== '').map((u) => urlHttps(u, 'Foto'));
   }
   return out;
 }
 
 export function criar(casamentoId: number, dados: Record<string, unknown>): Presente {
   if (dados.nome === undefined || dados.preco === undefined) {
-    throw new ErroValidacao('nome e preço são obrigatórios');
+    throw new ErroValidacao('Informe o nome e o preço do presente');
   }
   const v = validar(dados);
   return criarPresente({ casamentoId, descricao: '', imagens: [], ...v } as Parameters<typeof criarPresente>[0]);

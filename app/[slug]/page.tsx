@@ -8,6 +8,11 @@ import Contador from '../components/Contador';
 
 export const dynamic = 'force-dynamic';
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const estado = obterEstadoPublico((await params).slug);
+  return estado ? { title: `${estado.casamento.nome_casal} — Lista de Presentes` } : {};
+}
+
 export default async function PaginaCasamento({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const estado = obterEstadoPublico(slug);

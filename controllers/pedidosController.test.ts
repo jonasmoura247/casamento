@@ -45,6 +45,14 @@ describe('pedidosController', () => {
     );
   });
 
+  it('criar rejeita nome do convidado vazio', async () => {
+    const { presente } = await criarCasamentoComPresenteDisponivel();
+    const { criar } = await import('./pedidosController');
+    await expect(criar({ presenteId: presente.id, nomeConvidado: '  ', mensagem: '' })).rejects.toThrow(
+      'Seu nome'
+    );
+  });
+
   it('buscarStatus retorna o pedido por id', async () => {
     const { presente } = await criarCasamentoComPresenteDisponivel();
     const { criar, buscarStatus } = await import('./pedidosController');
@@ -73,5 +81,16 @@ describe('pedidosController', () => {
     const { casamento } = await criarCasamentoComPresenteDisponivel();
     const { marcarPago } = await import('./pedidosController');
     expect(() => marcarPago(casamento.id, 9999)).toThrow('pedido nao encontrado');
+  });
+
+  it('listar anonimiza pedidos de casamentos expirados ha mais de 90 dias antes de devolver a lista', async () => {
+    const { casamento, presente } = await criarCasamentoComPresenteDisponivel();
+    const { getDb } = await import('../models/db');
+    const dataAntiga = new Date(Date.now() - 91 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    getDb().prepare('UPDATE casamentos SET data_casamento = ? WHERE id = ?').run(dataAntiga, casamento.id);
+    const { criar, listar } = await import('./pedidosController');
+    await criar({ presenteId: presente.id, nomeConvidado: 'Convidado', mensagem: 'Oi' });
+    const [pedido] = listar(casamento.id);
+    expect(pedido.nome_convidado).toBe('[removido]');
   });
 });

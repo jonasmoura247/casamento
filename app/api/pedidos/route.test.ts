@@ -91,7 +91,7 @@ describe('POST /api/pedidos', () => {
     const response = await POST(request);
     const body = await response.json();
     expect(response.status).toBe(400);
-    expect(body.erro).toBe('nome do convidado é obrigatório');
+    expect(body.erro).toBe('Preencha o campo "Seu nome"');
   });
 
   it('rejeita tipos invalidos com erro generico (sem vazar TypeError)', async () => {
@@ -103,7 +103,7 @@ describe('POST /api/pedidos', () => {
     }));
     const body = await response.json();
     expect(response.status).toBe(400);
-    expect(body.erro).toBe('mensagem inválido');
+    expect(body.erro).toBe('Preencha o campo "Mensagem" com texto');
   });
 
   it('nao reserva o mesmo presente duas vezes em requisicoes simultaneas', async () => {

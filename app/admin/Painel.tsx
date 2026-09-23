@@ -66,17 +66,27 @@ const inputClass =
 function SecaoCasamento() {
   const [casamento, setCasamento] = useState<Casamento | null>(null);
   const [salvo, setSalvo] = useState(false);
+  const [erroSalvar, setErroSalvar] = useState('');
   const [copiado, setCopiado] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     fetch('/api/admin/casamento').then((r) => r.json()).then((body) => setCasamento(body.casamento));
   }, []);
 
+  const excluirConta = async () => {
+    if (!window.confirm('Isso vai apagar sua conta, sua lista e todos os pedidos recebidos. Essa ação não pode ser desfeita. Continuar?')) {
+      return;
+    }
+    await fetch('/api/admin/conta', { method: 'DELETE' });
+    router.push('/');
+  };
+
   if (!casamento) return null;
 
-  async function salvar(e: React.FormEvent) {
+  const salvar = async (e: React.FormEvent) => {
     e.preventDefault();
-    await fetch('/api/admin/casamento', {
+    const response = await fetch('/api/admin/casamento', {
       method: 'PATCH',
       body: JSON.stringify({
         nomeCasal: casamento.nome_casal,
@@ -89,17 +99,23 @@ function SecaoCasamento() {
         mostrarContador: Boolean(casamento.mostrar_contador),
       }),
     });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      setErroSalvar(body.erro ?? 'Não foi possível salvar. Tente novamente.');
+      return;
+    }
+    setErroSalvar('');
     setSalvo(true);
     setTimeout(() => setSalvo(false), 2000);
-  }
+  };
 
   const linkPublico = `${window.location.origin}/${casamento.slug}`;
 
-  async function copiarLink() {
+  const copiarLink = async () => {
     await navigator.clipboard.writeText(linkPublico);
     setCopiado(true);
     setTimeout(() => setCopiado(false), 2000);
-  }
+  };
 
   return (
     <>
@@ -141,7 +157,18 @@ function SecaoCasamento() {
         <button type="submit" className="bg-accent hover:bg-accent-dark text-white rounded-full px-4 py-2 text-sm font-medium transition-colors self-start">
           {salvo ? 'Salvo!' : 'Salvar'}
         </button>
+        {erroSalvar && <p role="alert" className="text-sm text-red-600">{erroSalvar}</p>}
       </form>
+      </section>
+
+      <section className="bg-surface border border-red-100 rounded-2xl p-6 shadow-sm">
+        <h2 className="font-serif text-xl text-red-700 mb-2">Zona de risco</h2>
+        <p className="text-sm text-foreground/70 mb-3">
+          Exclui sua conta, sua lista de presentes e todos os pedidos recebidos. Não pode ser desfeito.
+        </p>
+        <button onClick={excluirConta} className="text-red-600 hover:text-red-700 font-medium text-sm border border-red-200 hover:border-red-300 rounded-full px-4 py-2 transition-colors">
+          Excluir minha conta
+        </button>
       </section>
     </>
   );
@@ -196,7 +223,8 @@ export default function Painel() {
       { method: editandoId ? 'PATCH' : 'POST', body: JSON.stringify(corpo) }
     );
     if (!response.ok) {
-      setErro(editandoId ? 'Não foi possível salvar o presente.' : 'Não foi possível adicionar o presente.');
+      const body = await response.json().catch(() => ({}));
+      setErro(body.erro ?? (editandoId ? 'Não foi possível salvar o presente.' : 'Não foi possível adicionar o presente.'));
       return;
     }
     setErro('');

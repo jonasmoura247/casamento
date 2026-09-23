@@ -14,11 +14,11 @@ const SENHA_MAX_LENGTH = 128;
 const HASH_FALSO = `${'0'.repeat(32)}:${'0'.repeat(128)}`;
 
 export function cadastrar(entrada: Record<string, unknown>): { token: string; casamento: Casamento } {
-  const slug = normalizarSlug(texto(entrada.slug, 'link', 50));
+  const slug = normalizarSlug(texto(entrada.slug, 'Link', 50));
   if (!slugValido(slug)) {
     throw new ErroValidacao('Link inválido — use apenas letras minúsculas, números e hífen (3 a 50 caracteres)');
   }
-  const email = texto(entrada.email, 'e-mail', 254).toLowerCase();
+  const email = texto(entrada.email, 'E-mail', 254).toLowerCase();
   if (!EMAIL_REGEX.test(email)) {
     throw new ErroValidacao('E-mail inválido');
   }
@@ -30,13 +30,13 @@ export function cadastrar(entrada: Record<string, unknown>): { token: string; ca
     throw new ErroValidacao(`Senha deve ter no máximo ${SENHA_MAX_LENGTH} caracteres`);
   }
   const dados = {
-    nomeCasal: texto(entrada.nomeCasal, 'nome do casal', 100, { obrigatorio: true }),
-    dataCasamento: dataIso(entrada.dataCasamento, 'data do casamento'),
-    local: texto(entrada.local, 'local', 200),
-    mensagem: texto(entrada.mensagem, 'mensagem', 500),
-    pixKey: texto(entrada.pixKey, 'chave Pix', 77, { obrigatorio: true }),
-    pixNomeRecebedor: texto(entrada.pixNomeRecebedor, 'nome do recebedor', 25, { obrigatorio: true }),
-    pixCidade: texto(entrada.pixCidade, 'cidade', 15, { obrigatorio: true }),
+    nomeCasal: texto(entrada.nomeCasal, 'Nome do casal', 100, { obrigatorio: true }),
+    dataCasamento: dataIso(entrada.dataCasamento, 'Data do casamento'),
+    local: texto(entrada.local, 'Local', 200),
+    mensagem: texto(entrada.mensagem, 'Mensagem', 500),
+    pixKey: texto(entrada.pixKey, 'Chave Pix', 77, { obrigatorio: true }),
+    pixNomeRecebedor: texto(entrada.pixNomeRecebedor, 'Nome do titular da chave Pix', 25, { obrigatorio: true }),
+    pixCidade: texto(entrada.pixCidade, 'Cidade', 15, { obrigatorio: true }),
   };
   if (buscarContaPorEmail(email)) {
     throw new ErroValidacao('E-mail já cadastrado');
