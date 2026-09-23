@@ -91,7 +91,18 @@ export function atualizarStatus(id: number, status: StatusPresente): void {
   db.prepare('UPDATE presentes SET status = ? WHERE id = ?').run(status, id);
 }
 
+// Atômico: só um chamador consegue reservar um presente disponível.
+export function reservarSeDisponivel(id: number): boolean {
+  const db = getDb();
+  return db.prepare("UPDATE presentes SET status = 'reservado' WHERE id = ? AND status = 'disponivel'").run(id).changes === 1;
+}
+
 export function removerPresente(id: number): void {
   const db = getDb();
   db.prepare('DELETE FROM presentes WHERE id = ?').run(id);
+}
+
+export function removerTodosDoCasamento(casamentoId: number): void {
+  const db = getDb();
+  db.prepare('DELETE FROM presentes WHERE casamento_id = ?').run(casamentoId);
 }

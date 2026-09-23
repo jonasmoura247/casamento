@@ -49,3 +49,11 @@ next-env.d.ts
 *.db-journal
 *.db-wal
 *.db-shm
+
+# artefatos de scan de seguranca
+/log_vm/
+/reports/
+/scan-*.log
+/start_out.log
+/build_out_full.txt
+/zap-*.png

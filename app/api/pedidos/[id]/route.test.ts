@@ -63,6 +63,7 @@ describe('GET /api/pedidos/[id]', () => {
 
     expect(response.status).toBe(200);
     expect(body.pedido.status).toBe('aguardando_pagamento');
+    expect(body.pedido).toEqual({ status: 'aguardando_pagamento' });
   });
 
   it('retorna 404 para pedido inexistente', async () => {

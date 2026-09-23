@@ -11,5 +11,6 @@ export async function GET(
   if (!pedido) {
     return NextResponse.json({ erro: 'Pedido nao encontrado' }, { status: 404 });
   }
-  return NextResponse.json({ pedido });
+  // Rota pública com ID sequencial: expõe só o status, nunca dados do convidado.
+  return NextResponse.json({ pedido: { status: pedido.status } });
 }

@@ -1,6 +1,7 @@
 // app/api/admin/presentes/[id]/route.ts
 import { NextResponse } from 'next/server';
 import { resolverCasamentoIdDaSessao } from '../../../_sessao';
+import { ErroValidacao, lerJson, respostaErro } from '@/lib/validacao';
 import { atualizar, remover } from '@/controllers/presentesController';
 
 export async function PATCH(
@@ -10,11 +11,13 @@ export async function PATCH(
   const casamentoId = await resolverCasamentoIdDaSessao();
   if (!casamentoId) return NextResponse.json({ erro: 'Nao autorizado' }, { status: 401 });
   const { id } = await params;
-  const dados = await request.json();
   try {
-    atualizar(casamentoId, Number(id), dados);
-  } catch {
-    return NextResponse.json({ erro: 'Presente nao encontrado' }, { status: 404 });
+    atualizar(casamentoId, Number(id), await lerJson(request));
+  } catch (erro) {
+    if (erro instanceof ErroValidacao && erro.message === 'presente nao encontrado') {
+      return NextResponse.json({ erro: 'Presente nao encontrado' }, { status: 404 });
+    }
+    return respostaErro(erro);
   }
   return NextResponse.json({ ok: true });
 }

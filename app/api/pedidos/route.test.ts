@@ -80,4 +80,37 @@ describe('POST /api/pedidos', () => {
     const response = await POST(request);
     expect(response.status).toBe(404);
   });
+
+  it('retorna 400 quando o nome do convidado esta vazio (erro de validacao)', async () => {
+    const presente = await criarPresenteDisponivel();
+    const { POST } = await import('./route');
+    const request = new Request('http://localhost/api/pedidos', {
+      method: 'POST',
+      body: JSON.stringify({ presenteId: presente.id, nomeConvidado: '  ', mensagem: '' }),
+    });
+    const response = await POST(request);
+    const body = await response.json();
+    expect(response.status).toBe(400);
+    expect(body.erro).toBe('nome do convidado é obrigatório');
+  });
+
+  it('rejeita tipos invalidos com erro generico (sem vazar TypeError)', async () => {
+    const presente = await criarPresenteDisponivel();
+    const { POST } = await import('./route');
+    const response = await POST(new Request('http://localhost/api/pedidos', {
+      method: 'POST',
+      body: JSON.stringify({ presenteId: presente.id, nomeConvidado: 'X', mensagem: 123 }),
+    }));
+    const body = await response.json();
+    expect(response.status).toBe(400);
+    expect(body.erro).toBe('mensagem inválido');
+  });
+
+  it('nao reserva o mesmo presente duas vezes em requisicoes simultaneas', async () => {
+    const presente = await criarPresenteDisponivel();
+    const { criar } = await import('@/controllers/pedidosController');
+    const dados = { presenteId: presente.id, nomeConvidado: 'A', mensagem: '' };
+    const resultados = await Promise.allSettled([criar(dados), criar(dados)]);
+    expect(resultados.filter((r) => r.status === 'fulfilled')).toHaveLength(1);
+  });
 });

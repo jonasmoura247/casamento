@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { resolverContaIdPorToken } from '@/models/sessoes';
 import { buscarPorContaId } from '@/models/casamentos';
+import { lerJson, respostaErro } from '@/lib/validacao';
 import { atualizarDados } from '@/controllers/casamentosController';
 
 export async function GET() {
@@ -18,7 +19,10 @@ export async function PATCH(request: Request) {
   const contaId = token && resolverContaIdPorToken(token);
   const casamento = contaId && buscarPorContaId(contaId);
   if (!casamento) return NextResponse.json({ erro: 'Nao autorizado' }, { status: 401 });
-  const dados = await request.json();
-  atualizarDados(casamento.id, dados);
+  try {
+    atualizarDados(casamento.id, await lerJson(request));
+  } catch (erro) {
+    return respostaErro(erro);
+  }
   return NextResponse.json({ ok: true });
 }

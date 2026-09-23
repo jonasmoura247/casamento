@@ -1,17 +1,32 @@
 // controllers/pedidosController.ts
-import { buscarPorId as buscarPresentePorId } from '../models/presentes';
-import { criarPedido, buscarPedidoPorId, listarPedidos, marcarComoPago, type Pedido } from '../models/pedidos';
+import { buscarPorId as buscarPresentePorId, reservarSeDisponivel, atualizarStatus } from '../models/presentes';
+import {
+  criarPedido,
+  buscarPedidoPorId,
+  listarPedidos,
+  marcarComoPago,
+  anonimizarPedidosAntigos,
+  type Pedido,
+} from '../models/pedidos';
 import { gerarPixCopiaCola, gerarQrCodeDataUrl } from '../models/pix';
 import { buscarPorId as buscarCasamentoPorId } from '../models/casamentos';
+import { texto, ErroValidacao } from '../lib/validacao';
+
+const MENSAGEM_MAX_LENGTH = 500;
+const NOME_MAX_LENGTH = 100;
 
 export async function criar(dados: {
-  presenteId: number;
-  nomeConvidado: string;
-  mensagem: string;
+  presenteId: unknown;
+  nomeConvidado: unknown;
+  mensagem: unknown;
 }): Promise<Pedido> {
-  const presente = buscarPresentePorId(dados.presenteId);
+  const nomeConvidado = texto(dados.nomeConvidado, 'nome do convidado', NOME_MAX_LENGTH, { obrigatorio: true });
+  const mensagem = texto(dados.mensagem, 'mensagem', MENSAGEM_MAX_LENGTH);
+  if (!Number.isInteger(dados.presenteId)) throw new ErroValidacao('presente indisponivel');
+
+  const presente = buscarPresentePorId(dados.presenteId as number);
   if (!presente || presente.status !== 'disponivel') {
-    throw new Error('presente indisponivel');
+    throw new ErroValidacao('presente indisponivel');
   }
   const casamento = buscarCasamentoPorId(presente.casamento_id)!;
 
@@ -22,15 +37,22 @@ export async function criar(dados: {
     valor: presente.preco,
     identificador: `PRESENTE${presente.id}`,
   });
-  const qrCodeDataUrl = await gerarQrCodeDataUrl(copiaCola);
 
-  return criarPedido({
-    presenteId: presente.id,
-    nomeConvidado: dados.nomeConvidado,
-    mensagem: dados.mensagem,
-    pixCopiaCola: copiaCola,
-    pixQrCodeDataUrl: qrCodeDataUrl,
-  });
+  // Reserva antes do await do QR: duas requisições simultâneas não reservam o mesmo presente.
+  if (!reservarSeDisponivel(presente.id)) throw new ErroValidacao('presente indisponivel');
+  try {
+    const qrCodeDataUrl = await gerarQrCodeDataUrl(copiaCola);
+    return criarPedido({
+      presenteId: presente.id,
+      nomeConvidado,
+      mensagem,
+      pixCopiaCola: copiaCola,
+      pixQrCodeDataUrl: qrCodeDataUrl,
+    });
+  } catch (erro) {
+    atualizarStatus(presente.id, 'disponivel');
+    throw erro;
+  }
 }
 
 export function buscarStatus(id: number): Pedido | undefined {
@@ -38,6 +60,7 @@ export function buscarStatus(id: number): Pedido | undefined {
 }
 
 export function listar(casamentoId: number): Pedido[] {
+  anonimizarPedidosAntigos();
   return listarPedidos(casamentoId);
 }
 

@@ -7,6 +7,7 @@ const DURACAO_HORAS = 8;
 export function criarSessao(contaId: number): string {
   const token = randomBytes(32).toString('hex');
   const db = getDb();
+  db.prepare("DELETE FROM sessoes WHERE expira_em <= datetime('now')").run();
   db.prepare(
     `INSERT INTO sessoes (token, conta_id, expira_em) VALUES (?, ?, datetime('now', '+${DURACAO_HORAS} hours'))`
   ).run(token, contaId);
@@ -24,4 +25,9 @@ export function resolverContaIdPorToken(token: string): number | undefined {
 export function apagarSessao(token: string): void {
   const db = getDb();
   db.prepare('DELETE FROM sessoes WHERE token = ?').run(token);
+}
+
+export function apagarSessoesDaConta(contaId: number): void {
+  const db = getDb();
+  db.prepare('DELETE FROM sessoes WHERE conta_id = ?').run(contaId);
 }

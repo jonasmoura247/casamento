@@ -1,5 +1,6 @@
 // app/api/admin/presentes/route.test.ts
 import { describe, it, expect, vi } from 'vitest';
+import { ErroValidacao } from '@/lib/validacao';
 
 vi.mock('../../_sessao', () => ({ resolverCasamentoIdDaSessao: vi.fn() }));
 vi.mock('@/controllers/presentesController', () => ({ criar: vi.fn(), listar: vi.fn() }));
@@ -49,7 +50,7 @@ describe('POST /api/admin/presentes', () => {
     const body = await response.json();
     expect(response.status).toBe(201);
     expect(body.presente.nome).toBe('Panela');
-    expect(criar).toHaveBeenCalledWith(7, { nome: 'Panela', descricao: '', preco: 100, imagens: [] });
+    expect(criar).toHaveBeenCalledWith(7, { nome: 'Panela', preco: '100' });
   });
 
   it('aceita descricao e imagens quando informadas', async () => {
@@ -62,6 +63,21 @@ describe('POST /api/admin/presentes', () => {
       method: 'POST',
       body: JSON.stringify({ nome: 'X', descricao: 'Y', preco: '10', imagens: ['a.jpg'] }),
     }));
-    expect(criar).toHaveBeenCalledWith(7, { nome: 'X', descricao: 'Y', preco: 10, imagens: ['a.jpg'] });
+    expect(criar).toHaveBeenCalledWith(7, { nome: 'X', descricao: 'Y', preco: '10', imagens: ['a.jpg'] });
+  });
+
+  it('retorna 400 com a mensagem de erro quando a validacao falha', async () => {
+    const { resolverCasamentoIdDaSessao } = await import('../../_sessao');
+    const { criar } = await import('@/controllers/presentesController');
+    vi.mocked(resolverCasamentoIdDaSessao).mockResolvedValue(7);
+    vi.mocked(criar).mockImplementation(() => { throw new ErroValidacao('nome do presente é obrigatório'); });
+    const { POST } = await import('./route');
+    const response = await POST(new Request('http://localhost/api/admin/presentes', {
+      method: 'POST',
+      body: JSON.stringify({ nome: '', preco: '10' }),
+    }));
+    const body = await response.json();
+    expect(response.status).toBe(400);
+    expect(body.erro).toBe('nome do presente é obrigatório');
   });
 });
