@@ -119,4 +119,56 @@ describe('pedidos', () => {
     expect(listarPedidos(casamentoA.id)).toHaveLength(1);
     expect(listarPedidos(casamentoA.id)[0].nome_convidado).toBe('G1');
   });
+
+  it('anonimizarPedidosAntigos remove nome/mensagem de convidado de casamento expirado ha mais de 90 dias', async () => {
+    const { casamento, presente } = await criarCasamentoComPresente('lgpd1@b.com', 'casal-lgpd1', 'X');
+    const { getDb } = await import('./db');
+    const dataAntiga = new Date(Date.now() - 91 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    getDb().prepare('UPDATE casamentos SET data_casamento = ? WHERE id = ?').run(dataAntiga, casamento.id);
+    const { criarPedido, anonimizarPedidosAntigos, buscarPedidoPorId } = await import('./pedidos');
+    const pedido = criarPedido({ presenteId: presente.id, nomeConvidado: 'Maria', mensagem: 'Parabens!', pixCopiaCola: 'x', pixQrCodeDataUrl: 'x' });
+    anonimizarPedidosAntigos();
+    const atualizado = buscarPedidoPorId(pedido.id)!;
+    expect(atualizado.nome_convidado).toBe('[removido]');
+    expect(atualizado.mensagem).toBe('');
+  });
+
+  it('anonimizarPedidosAntigos preserva pedidos de casamento expirado ha menos de 90 dias', async () => {
+    const { casamento, presente } = await criarCasamentoComPresente('lgpd2@b.com', 'casal-lgpd2', 'Y');
+    const { getDb } = await import('./db');
+    const dataRecente = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    getDb().prepare('UPDATE casamentos SET data_casamento = ? WHERE id = ?').run(dataRecente, casamento.id);
+    const { criarPedido, anonimizarPedidosAntigos, buscarPedidoPorId } = await import('./pedidos');
+    const pedido = criarPedido({ presenteId: presente.id, nomeConvidado: 'Joao', mensagem: 'Oi', pixCopiaCola: 'x', pixQrCodeDataUrl: 'x' });
+    anonimizarPedidosAntigos();
+    expect(buscarPedidoPorId(pedido.id)?.nome_convidado).toBe('Joao');
+  });
+
+  it('anonimizarPedidosAntigos preserva pedidos de casamento ainda nao expirado', async () => {
+    const { presente } = await criarCasamentoComPresente('lgpd3@b.com', 'casal-lgpd3', 'Z');
+    const { criarPedido, anonimizarPedidosAntigos, buscarPedidoPorId } = await import('./pedidos');
+    const pedido = criarPedido({ presenteId: presente.id, nomeConvidado: 'Ana', mensagem: '', pixCopiaCola: 'x', pixQrCodeDataUrl: 'x' });
+    anonimizarPedidosAntigos();
+    expect(buscarPedidoPorId(pedido.id)?.nome_convidado).toBe('Ana');
+  });
+
+  it('anonimizarPedidosAntigos e idempotente (nao reprocessa pedido ja removido)', async () => {
+    const { casamento, presente } = await criarCasamentoComPresente('lgpd4@b.com', 'casal-lgpd4', 'W');
+    const { getDb } = await import('./db');
+    const dataAntiga = new Date(Date.now() - 91 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    getDb().prepare('UPDATE casamentos SET data_casamento = ? WHERE id = ?').run(dataAntiga, casamento.id);
+    const { criarPedido, anonimizarPedidosAntigos, buscarPedidoPorId } = await import('./pedidos');
+    const pedido = criarPedido({ presenteId: presente.id, nomeConvidado: 'Carlos', mensagem: 'Oi', pixCopiaCola: 'x', pixQrCodeDataUrl: 'x' });
+    anonimizarPedidosAntigos();
+    anonimizarPedidosAntigos();
+    expect(buscarPedidoPorId(pedido.id)?.nome_convidado).toBe('[removido]');
+  });
+
+  it('removerPedidosDoCasamento apaga todos os pedidos de um casamento', async () => {
+    const { casamento, presente } = await criarCasamentoComPresente('lgpd5@b.com', 'casal-lgpd5', 'V');
+    const { criarPedido, removerPedidosDoCasamento, buscarPedidoPorId } = await import('./pedidos');
+    const pedido = criarPedido({ presenteId: presente.id, nomeConvidado: 'X', mensagem: '', pixCopiaCola: 'x', pixQrCodeDataUrl: 'x' });
+    removerPedidosDoCasamento(casamento.id);
+    expect(buscarPedidoPorId(pedido.id)).toBeUndefined();
+  });
 });

@@ -45,6 +45,16 @@ describe('pedidosController', () => {
     );
   });
 
+  it('criar recusa pedido de casamento que ja aconteceu', async () => {
+    const { casamento, presente } = await criarCasamentoComPresenteDisponivel();
+    const { atualizarDados } = await import('./casamentosController');
+    atualizarDados(casamento.id, { dataCasamento: '2020-01-01' });
+    const { criar } = await import('./pedidosController');
+    await expect(criar({ presenteId: presente.id, nomeConvidado: 'X', mensagem: '' })).rejects.toThrow(
+      'presente indisponivel'
+    );
+  });
+
   it('criar rejeita nome do convidado vazio', async () => {
     const { presente } = await criarCasamentoComPresenteDisponivel();
     const { criar } = await import('./pedidosController');
@@ -87,9 +97,9 @@ describe('pedidosController', () => {
     const { casamento, presente } = await criarCasamentoComPresenteDisponivel();
     const { getDb } = await import('../models/db');
     const dataAntiga = new Date(Date.now() - 91 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    getDb().prepare('UPDATE casamentos SET data_casamento = ? WHERE id = ?').run(dataAntiga, casamento.id);
     const { criar, listar } = await import('./pedidosController');
     await criar({ presenteId: presente.id, nomeConvidado: 'Convidado', mensagem: 'Oi' });
+    getDb().prepare('UPDATE casamentos SET data_casamento = ? WHERE id = ?').run(dataAntiga, casamento.id);
     const [pedido] = listar(casamento.id);
     expect(pedido.nome_convidado).toBe('[removido]');
   });

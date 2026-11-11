@@ -15,9 +15,11 @@ function calcularRestante(dataAlvo: string) {
 }
 
 export default function Contador({ dataCasamento }: { dataCasamento: string }) {
-  const [restante, setRestante] = useState(() => calcularRestante(dataCasamento));
+  // Começa vazio: o horário do servidor difere do do navegador e quebraria a hidratação.
+  const [restante, setRestante] = useState<ReturnType<typeof calcularRestante> | null>(null);
 
   useEffect(() => {
+    setRestante(calcularRestante(dataCasamento));
     const intervalo = setInterval(() => setRestante(calcularRestante(dataCasamento)), 1000);
     return () => clearInterval(intervalo);
   }, [dataCasamento]);
@@ -26,7 +28,7 @@ export default function Contador({ dataCasamento }: { dataCasamento: string }) {
     <div className="flex items-center justify-center gap-4 sm:gap-6 my-6">
       {(['dias', 'horas', 'minutos', 'segundos'] as const).map((unidade) => (
         <div key={unidade} className="text-center">
-          <p className="font-serif text-3xl sm:text-4xl text-accent-dark">{restante[unidade]}</p>
+          <p className="font-serif text-3xl sm:text-4xl text-accent-dark">{restante ? restante[unidade] : '–'}</p>
           <p className="text-xs uppercase tracking-widest text-foreground/50">{unidade}</p>
         </div>
       ))}

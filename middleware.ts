@@ -16,13 +16,24 @@ function construirCsp(nonce: string): string {
   ].join('; ');
 }
 
+function aplicarHeadersDeSeguranca(headers: Headers, csp: string) {
+  headers.set('Content-Security-Policy', csp);
+  headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  headers.set('X-Content-Type-Options', 'nosniff');
+  headers.set('Cache-Control', 'no-store');
+  headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+}
+
 export function middleware(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   const csp = construirCsp(nonce);
 
   const isAdminApi = request.nextUrl.pathname.startsWith('/api/admin');
   if (isAdminApi && !request.cookies.get('sessao')?.value) {
-    return NextResponse.json({ erro: 'Nao autorizado' }, { status: 401, headers: { 'Content-Security-Policy': csp } });
+    const headers = new Headers();
+    aplicarHeadersDeSeguranca(headers, csp);
+    return NextResponse.json({ erro: 'Nao autorizado' }, { status: 401, headers });
   }
 
   const requestHeaders = new Headers(request.headers);
@@ -30,7 +41,7 @@ export function middleware(request: NextRequest) {
   requestHeaders.set('Content-Security-Policy', csp);
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
-  response.headers.set('Content-Security-Policy', csp);
+  aplicarHeadersDeSeguranca(response.headers, csp);
   return response;
 }
 

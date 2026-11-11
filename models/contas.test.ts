@@ -47,4 +47,11 @@ describe('contas', () => {
     expect(buscarContaPorEmail('d@b.com')?.email).toBe('d@b.com');
     expect(buscarContaPorEmail('naoexiste@b.com')).toBeUndefined();
   });
+
+  it('removerConta apaga o registro', async () => {
+    const { criarConta, removerConta, buscarContaPorEmail } = await import('./contas');
+    const conta = criarConta({ email: 'rm@b.com', senha: '12345678' });
+    removerConta(conta.id);
+    expect(buscarContaPorEmail('rm@b.com')).toBeUndefined();
+  });
 });

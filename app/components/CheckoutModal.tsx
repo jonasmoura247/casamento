@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 interface Props {
   presenteId: number;
@@ -31,7 +32,8 @@ export default function CheckoutModal({ presenteId, nome, preco, onFechar, onPag
         body: JSON.stringify({ presenteId, nomeConvidado, mensagem }),
       });
       if (!response.ok) {
-        setErro('Não foi possível gerar o Pix. Tente novamente.');
+        const corpo = await response.json().catch(() => ({}));
+        setErro(corpo.erro ?? 'Não foi possível gerar o Pix. Tente novamente.');
         return;
       }
       const body = await response.json();
@@ -108,6 +110,13 @@ export default function CheckoutModal({ presenteId, nome, preco, onFechar, onPag
               className="border border-border-soft rounded-xl px-4 py-2.5 outline-none focus:border-accent focus:ring-2 focus:ring-accent-soft transition-shadow resize-none"
             />
             {erro && <p className="text-red-600 text-sm">{erro}</p>}
+            <p className="text-xs text-foreground/60">
+              Ao continuar, você concorda com nossa{' '}
+              <Link href="/privacidade" className="text-accent hover:text-accent-dark underline">
+                Política de Privacidade
+              </Link>
+              .
+            </p>
             <button
               type="submit"
               className="bg-accent hover:bg-accent-dark text-white rounded-full px-4 py-3 font-medium transition-colors mt-1"

@@ -52,4 +52,15 @@ describe('sessoes', () => {
     apagarSessao(token);
     expect(resolverContaIdPorToken(token)).toBeUndefined();
   });
+
+  it('apagarSessoesDaConta remove todas as sessoes da conta', async () => {
+    const { criarConta } = await import('./contas');
+    const { criarSessao, apagarSessoesDaConta, resolverContaIdPorToken } = await import('./sessoes');
+    const conta = criarConta({ email: 'gg@b.com', senha: '12345678' });
+    const token1 = criarSessao(conta.id);
+    const token2 = criarSessao(conta.id);
+    apagarSessoesDaConta(conta.id);
+    expect(resolverContaIdPorToken(token1)).toBeUndefined();
+    expect(resolverContaIdPorToken(token2)).toBeUndefined();
+  });
 });

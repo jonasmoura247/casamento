@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  devIndicators: false,
+  allowedDevOrigins: ["*.ngrok-free.dev"],
   images: {
     // Fotos de presentes vêm de URLs que o casal cola livremente no /admin,
     // então precisa aceitar qualquer host https — o next/image proxeia a

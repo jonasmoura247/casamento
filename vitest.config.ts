@@ -10,7 +10,6 @@ export default defineConfig({
   test: {
     setupFiles: ['./vitest.setup.ts'],
     coverage: {
-      all: true,
       include: ['app/**/*.{ts,tsx}', 'models/**/*.ts', 'controllers/**/*.ts', 'middleware.ts'],
       exclude: ['**/*.test.ts', '**/*.test.tsx'],
       thresholds: {

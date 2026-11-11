@@ -255,4 +255,31 @@ describe('Painel - SecaoCasamento (link público)', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Salvar' })).toBeInTheDocument());
     vi.useRealTimers();
   });
+
+  it('exclui a conta quando confirmado e redireciona pra home', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const fetchMock = mockFetchPadrao();
+    vi.stubGlobal('fetch', fetchMock);
+    render(<Painel />);
+
+    await waitFor(() => expect(screen.getByDisplayValue('Jonas & Natália')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'Excluir minha conta' }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/admin/conta', expect.objectContaining({ method: 'DELETE' })));
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/'));
+    vi.restoreAllMocks();
+  });
+
+  it('nao exclui a conta se o usuario cancelar a confirmacao', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const fetchMock = mockFetchPadrao();
+    vi.stubGlobal('fetch', fetchMock);
+    render(<Painel />);
+
+    await waitFor(() => expect(screen.getByDisplayValue('Jonas & Natália')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'Excluir minha conta' }));
+
+    expect(fetchMock).not.toHaveBeenCalledWith('/api/admin/conta', expect.anything());
+    vi.restoreAllMocks();
+  });
 });

@@ -9,8 +9,8 @@ vi.mock('@/models/pedidos', () => ({ expirarPedidosAntigos: vi.fn() }));
 vi.mock('next/navigation', () => ({ notFound: vi.fn(() => { throw new Error('NEXT_NOT_FOUND'); }) }));
 
 const CASAMENTO_BASE = {
-  id: 1, slug: 'jonasenatalia', nome_casal: 'Jonas & Natália', data_casamento: '2027-01-01',
-  local: '', mensagem: '', pix_key: 'x', pix_nome_recebedor: 'X', pix_cidade: 'X', mostrar_contador: 1,
+  id: 1, conta_id: 1, slug: 'jonasenatalia', nome_casal: 'Jonas & Natália', data_casamento: '2027-01-01',
+  local: '', mensagem: '', pix_key: 'x', pix_nome_recebedor: 'X', pix_cidade: 'X', mostrar_contador: 1 as 0 | 1,
 };
 
 describe('PaginaCasamento', () => {

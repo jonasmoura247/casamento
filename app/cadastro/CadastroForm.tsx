@@ -52,6 +52,13 @@ export default function CadastroForm() {
         <input placeholder="Nome do titular da chave Pix" required {...campo('pixNomeRecebedor')} className={inputClass} />
         <input placeholder="Cidade do titular" required {...campo('pixCidade')} className={inputClass} />
         {erro && <p className="text-red-600 text-sm">{erro}</p>}
+        <p className="text-xs text-foreground/60">
+          Ao continuar, você concorda com nossa{' '}
+          <Link href="/privacidade" className="text-accent hover:text-accent-dark underline">
+            Política de Privacidade
+          </Link>
+          .
+        </p>
         <button type="submit" className="bg-accent hover:bg-accent-dark text-white rounded-full px-4 py-3 font-medium transition-colors mt-2">
           Criar conta e lista
         </button>

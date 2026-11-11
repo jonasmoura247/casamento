@@ -118,4 +118,13 @@ describe('casamentos', () => {
     expect(estaExpirado('2020-01-01', new Date('2020-01-05'))).toBe(true);
     expect(estaExpirado('2030-01-01', new Date('2020-01-05'))).toBe(false);
   });
+
+  it('removerCasamento apaga o registro', async () => {
+    const { criarConta } = await import('./contas');
+    const { criarCasamento, removerCasamento, buscarPorSlug } = await import('./casamentos');
+    const conta = criarConta({ email: 'nn@b.com', senha: '12345678' });
+    const casamento = criarCasamento({ contaId: conta.id, ...DADOS_BASE });
+    removerCasamento(casamento.id);
+    expect(buscarPorSlug('jonasenatalia')).toBeUndefined();
+  });
 });

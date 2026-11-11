@@ -20,6 +20,11 @@ describe('middleware', () => {
     const body = await response.json();
     expect(body.erro).toBe('Nao autorizado');
     expect(response.headers.get('Content-Security-Policy')).toContain("default-src 'self'");
+    expect(response.headers.get('Strict-Transport-Security')).toContain('max-age=');
+    expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff');
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
+    expect(response.headers.get('Referrer-Policy')).toBe('strict-origin-when-cross-origin');
+    expect(response.headers.get('Permissions-Policy')).toContain('camera=()');
   });
 
   it('deixa passar /api/admin/* com cookie de sessao', () => {
@@ -37,6 +42,11 @@ describe('middleware', () => {
     const csp = response.headers.get('Content-Security-Policy');
     expect(csp).toContain('nonce-');
     expect(csp).toContain("frame-ancestors 'none'");
+    expect(response.headers.get('Strict-Transport-Security')).toContain('max-age=');
+    expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff');
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
+    expect(response.headers.get('Referrer-Policy')).toBe('strict-origin-when-cross-origin');
+    expect(response.headers.get('Permissions-Policy')).toContain('camera=()');
   });
 
   it('usa unsafe-eval e unsafe-inline em desenvolvimento', () => {

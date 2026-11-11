@@ -35,14 +35,14 @@ describe('CheckoutModal', () => {
     await waitFor(() => expect(screen.getByAltText('QR Code Pix')).toBeInTheDocument());
   });
 
-  it('mostra erro quando a reserva falha', async () => {
-    vi.stubGlobal('fetch', mockFetchOnce({ erro: 'x' }, false));
+  it('mostra a mensagem do servidor quando a reserva falha', async () => {
+    vi.stubGlobal('fetch', mockFetchOnce({ erro: 'Preencha o campo "Seu nome"' }, false));
     render(<CheckoutModal presenteId={1} nome="Panela" preco={100} onFechar={onFechar} onPago={onPago} />);
 
     fireEvent.change(screen.getByPlaceholderText('Seu nome'), { target: { value: 'Convidado' } });
     fireEvent.click(screen.getByRole('button', { name: 'Gerar Pix' }));
 
-    await waitFor(() => expect(screen.getByText('Não foi possível gerar o Pix. Tente novamente.')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Preencha o campo "Seu nome"')).toBeInTheDocument());
   });
 
   it('mostra erro quando o fetch rejeita (rede)', async () => {

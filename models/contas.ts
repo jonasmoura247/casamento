@@ -42,3 +42,8 @@ export function buscarContaPorEmail(email: string): Conta | undefined {
   const db = getDb();
   return db.prepare('SELECT * FROM contas WHERE email = ?').get(email) as Conta | undefined;
 }
+
+export function removerConta(id: number): void {
+  const db = getDb();
+  db.prepare('DELETE FROM contas WHERE id = ?').run(id);
+}

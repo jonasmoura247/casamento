@@ -76,3 +76,28 @@ export function expirarPedidosAntigos(): void {
   ).run();
   db.prepare(`UPDATE pedidos SET status = 'cancelado' WHERE ${CONDICAO_EXPIRADO}`).run();
 }
+
+const RETENCAO_CONVIDADO_DIAS = 90;
+
+// LGPD art. 16: elimina dado pessoal do convidado apos o fim da finalidade
+// (casamento encerrado ha mais de RETENCAO_CONVIDADO_DIAS dias).
+export function anonimizarPedidosAntigos(): void {
+  const db = getDb();
+  db.prepare(
+    `UPDATE pedidos SET nome_convidado = '[removido]', mensagem = ''
+     WHERE nome_convidado != '[removido]'
+       AND presente_id IN (
+         SELECT presentes.id FROM presentes
+         JOIN casamentos ON casamentos.id = presentes.casamento_id
+         WHERE date(casamentos.data_casamento, '+1 day', '+${RETENCAO_CONVIDADO_DIAS} days') <= date('now')
+       )`
+  ).run();
+}
+
+export function removerPedidosDoCasamento(casamentoId: number): void {
+  const db = getDb();
+  db.prepare(
+    `DELETE FROM pedidos WHERE presente_id IN
+       (SELECT id FROM presentes WHERE casamento_id = ?)`
+  ).run(casamentoId);
+}

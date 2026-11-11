@@ -143,13 +143,27 @@ function SecaoCasamento() {
       <section className="bg-surface border border-border-soft rounded-2xl p-6 shadow-sm">
       <h2 className="font-serif text-xl text-accent-dark mb-4">Dados do casamento</h2>
       <form onSubmit={salvar} className="flex flex-col gap-3 max-w-lg">
-        <input className={inputClass} value={casamento.nome_casal} onChange={(e) => setCasamento({ ...casamento, nome_casal: e.target.value })} placeholder="Nome do casal" />
-        <input className={inputClass} type="date" value={casamento.data_casamento} onChange={(e) => setCasamento({ ...casamento, data_casamento: e.target.value })} />
-        <input className={inputClass} value={casamento.local} onChange={(e) => setCasamento({ ...casamento, local: e.target.value })} placeholder="Local" />
-        <textarea className={inputClass} value={casamento.mensagem} onChange={(e) => setCasamento({ ...casamento, mensagem: e.target.value })} placeholder="Mensagem" rows={3} />
-        <input className={inputClass} value={casamento.pix_key} onChange={(e) => setCasamento({ ...casamento, pix_key: e.target.value })} placeholder="Chave Pix" />
-        <input className={inputClass} value={casamento.pix_nome_recebedor} onChange={(e) => setCasamento({ ...casamento, pix_nome_recebedor: e.target.value })} placeholder="Nome do titular" />
-        <input className={inputClass} value={casamento.pix_cidade} onChange={(e) => setCasamento({ ...casamento, pix_cidade: e.target.value })} placeholder="Cidade" />
+        <label className="flex flex-col gap-1 text-sm text-foreground/70">Nome do casal
+          <input className={inputClass} value={casamento.nome_casal} onChange={(e) => setCasamento({ ...casamento, nome_casal: e.target.value })} placeholder="Nome do casal" />
+        </label>
+        <label className="flex flex-col gap-1 text-sm text-foreground/70">Data do casamento
+          <input className={inputClass} type="date" value={casamento.data_casamento} onChange={(e) => setCasamento({ ...casamento, data_casamento: e.target.value })} />
+        </label>
+        <label className="flex flex-col gap-1 text-sm text-foreground/70">Local
+          <input className={inputClass} value={casamento.local} onChange={(e) => setCasamento({ ...casamento, local: e.target.value })} placeholder="Local" />
+        </label>
+        <label className="flex flex-col gap-1 text-sm text-foreground/70">Mensagem para os convidados
+          <textarea className={inputClass} value={casamento.mensagem} onChange={(e) => setCasamento({ ...casamento, mensagem: e.target.value })} placeholder="Mensagem" rows={3} />
+        </label>
+        <label className="flex flex-col gap-1 text-sm text-foreground/70">Chave Pix
+          <input className={inputClass} value={casamento.pix_key} onChange={(e) => setCasamento({ ...casamento, pix_key: e.target.value })} placeholder="Chave Pix" />
+        </label>
+        <label className="flex flex-col gap-1 text-sm text-foreground/70">Nome do titular da chave Pix
+          <input className={inputClass} value={casamento.pix_nome_recebedor} onChange={(e) => setCasamento({ ...casamento, pix_nome_recebedor: e.target.value })} placeholder="Nome do titular" />
+        </label>
+        <label className="flex flex-col gap-1 text-sm text-foreground/70">Cidade do titular
+          <input className={inputClass} value={casamento.pix_cidade} onChange={(e) => setCasamento({ ...casamento, pix_cidade: e.target.value })} placeholder="Cidade" />
+        </label>
         <label className="flex items-center gap-2 text-sm text-foreground/70">
           <input type="checkbox" checked={Boolean(casamento.mostrar_contador)} onChange={(e) => setCasamento({ ...casamento, mostrar_contador: e.target.checked ? 1 : 0 })} />
           Mostrar contador regressivo

@@ -9,7 +9,7 @@ import {
   type Pedido,
 } from '../models/pedidos';
 import { gerarPixCopiaCola, gerarQrCodeDataUrl } from '../models/pix';
-import { buscarPorId as buscarCasamentoPorId } from '../models/casamentos';
+import { buscarPorId as buscarCasamentoPorId, estaExpirado } from '../models/casamentos';
 import { texto, ErroValidacao } from '../lib/validacao';
 
 const MENSAGEM_MAX_LENGTH = 500;
@@ -29,6 +29,9 @@ export async function criar(dados: {
     throw new ErroValidacao('presente indisponivel');
   }
   const casamento = buscarCasamentoPorId(presente.casamento_id)!;
+  if (estaExpirado(casamento.data_casamento, new Date())) {
+    throw new ErroValidacao('presente indisponivel');
+  }
 
   const copiaCola = gerarPixCopiaCola({
     chave: casamento.pix_key,

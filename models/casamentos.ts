@@ -108,6 +108,11 @@ export function atualizarCasamento(
   );
 }
 
+export function removerCasamento(id: number): void {
+  const db = getDb();
+  db.prepare('DELETE FROM casamentos WHERE id = ?').run(id);
+}
+
 export function calcularCorteExpiracao(dataCasamento: string): Date {
   const corte = new Date(`${dataCasamento}T00:00:00.000Z`);
   corte.setUTCDate(corte.getUTCDate() + 1);

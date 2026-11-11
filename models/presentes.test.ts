@@ -83,6 +83,17 @@ describe('presentes', () => {
     expect(listarTodos(casamentoB.id)).toHaveLength(2);
   });
 
+  it('removerTodosDoCasamento apaga todos os presentes de um casamento', async () => {
+    const casamentoA = await criarCasamentoDeTeste('lgpd-a@b.com', 'casal-lgpd-a');
+    const casamentoB = await criarCasamentoDeTeste('lgpd-b@b.com', 'casal-lgpd-b');
+    const { criarPresente, removerTodosDoCasamento, listarTodos } = await import('./presentes');
+    criarPresente({ casamentoId: casamentoA.id, nome: 'A1', descricao: '', preco: 1, imagens: [] });
+    criarPresente({ casamentoId: casamentoB.id, nome: 'B1', descricao: '', preco: 1, imagens: [] });
+    removerTodosDoCasamento(casamentoA.id);
+    expect(listarTodos(casamentoA.id)).toHaveLength(0);
+    expect(listarTodos(casamentoB.id)).toHaveLength(1);
+  });
+
   it('respeita o limite de 5 fotos', async () => {
     const casamento = await criarCasamentoDeTeste('s@b.com', 'casal-s');
     const { criarPresente } = await import('./presentes');

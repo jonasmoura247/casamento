@@ -50,6 +50,16 @@ describe('authController', () => {
     expect(() => cadastrar({ ...DADOS_CADASTRO, slug: 'outro-slug' })).toThrow('E-mail já cadastrado');
   });
 
+  it('cadastrar rejeita email invalido', async () => {
+    const { cadastrar } = await import('./authController');
+    expect(() => cadastrar({ ...DADOS_CADASTRO, email: 'nao-e-email' })).toThrow('E-mail inválido');
+  });
+
+  it('cadastrar rejeita senha curta', async () => {
+    const { cadastrar } = await import('./authController');
+    expect(() => cadastrar({ ...DADOS_CADASTRO, senha: '123' })).toThrow('Senha deve ter pelo menos');
+  });
+
   it('cadastrar rejeita slug ja em uso', async () => {
     const { cadastrar } = await import('./authController');
     cadastrar(DADOS_CADASTRO);
@@ -93,5 +103,29 @@ describe('authController', () => {
     const { token } = cadastrar(DADOS_CADASTRO);
     logout(token);
     expect(resolverContaIdPorToken(token)).toBeUndefined();
+  });
+
+  it('excluirConta apaga conta, casamento, presentes, pedidos e sessoes', async () => {
+    const { cadastrar, excluirConta } = await import('./authController');
+    const { criar: criarPresente } = await import('./presentesController');
+    const { criar: criarPedido } = await import('./pedidosController');
+    const { resolverContaIdPorToken } = await import('../models/sessoes');
+    const { buscarContaPorEmail } = await import('../models/contas');
+    const { buscarPorSlug } = await import('../models/casamentos');
+    const { buscarPorId: buscarPresentePorId } = await import('../models/presentes');
+    const { buscarPedidoPorId } = await import('../models/pedidos');
+
+    const { token, casamento } = cadastrar(DADOS_CADASTRO);
+    const contaId = resolverContaIdPorToken(token)!;
+    const presente = criarPresente(casamento.id, { nome: 'Panela', descricao: '', preco: 100, imagens: [] });
+    const pedido = await criarPedido({ presenteId: presente.id, nomeConvidado: 'Convidado', mensagem: '' });
+
+    excluirConta(contaId, casamento.id);
+
+    expect(resolverContaIdPorToken(token)).toBeUndefined();
+    expect(buscarContaPorEmail(DADOS_CADASTRO.email)).toBeUndefined();
+    expect(buscarPorSlug(DADOS_CADASTRO.slug)).toBeUndefined();
+    expect(buscarPresentePorId(presente.id)).toBeUndefined();
+    expect(buscarPedidoPorId(pedido.id)).toBeUndefined();
   });
 });
